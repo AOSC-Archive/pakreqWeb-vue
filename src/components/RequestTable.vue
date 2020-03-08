@@ -11,8 +11,11 @@
         single-line
         hide-details
       ></v-text-field>
+      <v-btn-toggle color="deep-purple accent-3" v-model="useRandomList">
+        <v-btn @click="toggleRandomValues">Feeling lucky?</v-btn>
+      </v-btn-toggle>
     </v-card-title>
-    <v-data-table :headers="table_headers" :items="requests" :search="search" :loading="loading"></v-data-table>
+    <v-data-table ref="dataTable" :headers="table_headers" :items="requests" :search="search" :loading="loading"></v-data-table>
   </v-card>
 </template>
 
@@ -26,6 +29,9 @@ export default {
       errored: false,
       error_text: null,
       requests: [],
+      refreshTimer: null,
+      randomList: [],
+      useRandomList: null,
       table_headers: [
         {
           text: 'ID',
@@ -55,8 +61,14 @@ export default {
       ]
     }
   },
+  props: {
+    autoRefresh: Boolean
+  },
   mounted () {
     this.fetchData()
+    if (this.autoRefresh) {
+      this.refreshTimer = setInterval(this.fetchData, 5000)
+    }
   },
   methods: {
     fetchData () {
@@ -67,11 +79,12 @@ export default {
         .then(function (response) {
           me.requests = response.data
           me.requests.forEach(function (request) {
-            request.type = {
-              PAKREQ: 'New',
-              OPTREQ: 'Optimization',
-              UPDREQ: 'Update'
-            }[request.type] || 'Unknown'
+            request.type =
+              {
+                PAKREQ: 'New',
+                OPTREQ: 'Optimization',
+                UPDREQ: 'Update'
+              }[request.type] || 'Unknown'
           })
         })
         .catch(function (err) {
@@ -81,6 +94,24 @@ export default {
         .finally(function () {
           me.loading = false
         })
+    },
+    getRandom () {
+      var array = new Uint16Array(10)
+      window.crypto.getRandomValues(array)
+      for (var i = 0; i < array.length; i++) {
+        array[i] = array[i] % this.requests.length
+      }
+      return array
+    },
+    toggleRandomValues () {
+      if (this.useRandomList === 0) { this.fetchData(); return }
+      var random = this.getRandom()
+      var randomList = []
+      for (let i = 0; i < random.length; i++) {
+        var p = this.requests.splice(random[i] - i, 1)
+        randomList.push(p[0])
+      }
+      this.requests = randomList
     }
   }
 }

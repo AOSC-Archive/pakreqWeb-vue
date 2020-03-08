@@ -12,7 +12,7 @@
       <v-list nav>
         <NavItem icon="mdi-home" @click="$router.push('/')" title="Home" />
         <NavItem icon="mdi-account-box" @click="checkAccount" title="Account" />
-        <NavItem icon="mdi-settings-box" title="Settings" />
+        <NavItem icon="mdi-settings-box" @click="callSettings" title="Settings" />
         <NavItem icon="mdi-settings-box" @click="$router.push('/packertool')" title="Packaging Assist" />
         <NavItem icon="mdi-information" @click="$router.push('/about')" title="About" />
       </v-list>
@@ -20,6 +20,7 @@
 
     <v-content>
       <Login @login="processLogin" :dialog.sync="login_dialog" />
+      <Settings :dialog.sync="settings_dialog" @settings="processSettings" />
       <router-view />
     </v-content>
   </v-app>
@@ -28,16 +29,19 @@
 <script>
 import NavItem from '@/components/NavItem.vue'
 import Login from '@/components/Login.vue'
+import Settings from '@/components/Settings.vue'
 export default {
   name: 'App',
 
   components: {
-    NavItem, Login
+    NavItem, Login, Settings
   },
 
   data: () => ({
     drawer: false,
     login_dialog: false,
+    settings_dialog: false,
+    settings: {},
     token: null,
     snackbar_message: null,
     snackbar: false,
@@ -48,6 +52,10 @@ export default {
     checkAccount () {
       this.drawer = false
       if (!this.token) this.login_dialog = true
+    },
+    callSettings () {
+      this.drawer = false
+      this.settings_dialog = true
     },
     showLoginError () {
       this.snackbar_message = 'An unexpected error occurred, please try to log in again'
@@ -71,6 +79,9 @@ export default {
         this.showLoginError()
       }
       this.token = event.token
+    },
+    processSettings (event) {
+      this.settings = event
     }
   }
 }
