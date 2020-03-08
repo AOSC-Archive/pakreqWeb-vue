@@ -1,5 +1,6 @@
 <template>
   <v-card>
+    <v-snackbar v-model="errored" :top="true" color="error">Unable to load the data: {{error_text}}</v-snackbar>
     <v-card-title>
       Package Requests
       <v-spacer></v-spacer>
@@ -22,6 +23,8 @@ export default {
     return {
       loading: true,
       search: null,
+      errored: false,
+      error_text: null,
       requests: [],
       table_headers: [
         {
@@ -63,6 +66,17 @@ export default {
         .get('https://pakreq.aosc.io/api/requests')
         .then(function (response) {
           me.requests = response.data
+          me.requests.forEach(function (request) {
+            request.type = {
+              PAKREQ: 'New',
+              OPTREQ: 'Optimization',
+              UPDREQ: 'Update'
+            }[request.type] || 'Unknown'
+          })
+        })
+        .catch(function (err) {
+          me.error_text = err.message
+          me.errored = true
         })
         .finally(function () {
           me.loading = false
