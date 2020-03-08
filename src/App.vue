@@ -13,6 +13,7 @@
         <NavItem icon="mdi-home" @click="$router.push('/')" title="Home" />
         <NavItem icon="mdi-account-box" @click="checkAccount" title="Account" />
         <NavItem icon="mdi-settings-box" title="Settings" />
+        <NavItem icon="mdi-settings-box" @click="$router.push('/packertool')" title="Packaging Assist" />
         <NavItem icon="mdi-information" @click="$router.push('/about')" title="About" />
       </v-list>
     </v-navigation-drawer>
