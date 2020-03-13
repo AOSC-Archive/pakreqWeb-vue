@@ -1,18 +1,6 @@
 <template>
   <div>
-    <v-toolbar color="green" flat>
-      <v-container>
-        <v-row>
-            <v-btn
-            :loading="aosc_loading"
-            outlined
-            color="black"
-            @click="checkAOSC"
-            >Check AOSC Repository</v-btn>
-            <v-btn :loading="repology_loading" outlined color="black" @click="checkRepology">Check Repology</v-btn>
-        </v-row>
-      </v-container>
-    </v-toolbar>
+    <v-progress-linear :indeterminate="loading" :active="loading"></v-progress-linear>
     <v-expand-transition>
       <v-container v-if="!!aosc_perf">
         <v-sheet color="grey lighten-3">
@@ -44,7 +32,7 @@
       </v-container>
     </v-expand-transition>
     <v-container>
-      <AssistEditor />
+      <AssistEditor ref="editor" @update:package_name="onLeavingNameInput" />
     </v-container>
   </div>
 </template>
@@ -55,6 +43,11 @@ import AssistEditor from '@/components/AssistEditor.vue'
 export default {
   name: 'PackerTool',
   components: { AssistEditor },
+  computed: {
+    loading () {
+      return this.aosc_loading || this.repology_loading
+    }
+  },
   data () {
     return {
       aosc_loading: false,
@@ -127,11 +120,19 @@ export default {
           return b.similarity - a.similarity
         })
         me.repology_results.splice(10)
+        if (me.repology_results[0] && me.repology_results[0].name === me.package_name) {
+          me.$refs.editor.setCompletion(me.repology_results[0])
+        }
       }).catch(function (err) {
         me.repology_perf = 'Failed: ' + err.message
       }).finally(function () {
         me.repology_loading = false
       })
+    },
+    onLeavingNameInput (event) {
+      this.package_name = event
+      this.checkAOSC()
+      this.checkRepology()
     }
   }
 }

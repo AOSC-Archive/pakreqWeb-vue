@@ -88,3 +88,20 @@ export function repologyFilter (name, input, similarName) {
   }
   return finalResult
 }
+
+export function normalizeName (name) {
+  var replaced = name.trim().toLowerCase().replace(/[^0-9a-z+\-.]/g, '')
+  var pattern = /[0-9a-z][0-9a-z+\-.]+/
+  var matched = pattern.exec(replaced)
+  return matched ? matched[0] : null
+}
+
+export function getSettings () {
+  if (!('localStorage' in window)) return null
+  try {
+    var settings = JSON.parse(window.localStorage.getItem('settings'))
+    return settings
+  } catch (e) {
+    return null
+  }
+}

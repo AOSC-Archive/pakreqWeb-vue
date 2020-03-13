@@ -61,7 +61,7 @@ export default {
       window.open('https://pakreq.aosc.io/account')
     },
     saveSettings () {
-      this.$emit('settings', this.$data)
+      window.localStorage.setItem('settings', JSON.stringify(this.$data))
       this.$emit('update:dialog', false)
     }
   }

@@ -11,15 +11,18 @@
         single-line
         hide-details
       ></v-text-field>
-      <v-btn-toggle color="deep-purple accent-3" v-model="useRandomList">
-        <v-btn @click="toggleRandomValues">Feeling lucky?</v-btn>
+      <v-btn-toggle dense color="deep-purple accent-3" v-model="useRandomList">
+        <v-btn icon @click="toggleRandomValues"><v-icon>mdi-dice-multiple-outline</v-icon></v-btn>
       </v-btn-toggle>
     </v-card-title>
-    <v-data-table ref="dataTable" :headers="table_headers" :items="requests" :search="search" :loading="loading"></v-data-table>
+    <v-data-table @pagination="linkify" ref="dataTable" :headers="table_headers" :items="requests" :search="search" :loading="loading"></v-data-table>
   </v-card>
 </template>
 
 <script>
+import linkifyElement from 'linkifyjs/element'
+import { getSettings } from '@/utils'
+
 export default {
   name: 'RequestTable',
   data () {
@@ -32,6 +35,7 @@ export default {
       refreshTimer: null,
       randomList: [],
       useRandomList: null,
+      convertLinks: true,
       table_headers: [
         {
           text: 'ID',
@@ -66,11 +70,26 @@ export default {
   },
   mounted () {
     this.fetchData()
-    if (this.autoRefresh) {
+    var settings = getSettings()
+    if (settings && settings.autoRefresh) {
       this.refreshTimer = setInterval(this.fetchData, 5000)
     }
   },
+  beforeDestroy () {
+    if (this.refreshTimer) clearInterval(this.refreshTimer)
+  },
   methods: {
+    linkify () {
+      if (this.convertLinks) {
+        this.$nextTick(
+          function () {
+            document.getElementsByTagName('td').forEach(function (item) {
+              linkifyElement(item, null, document)
+            })
+          }
+        )
+      }
+    },
     fetchData () {
       var me = this
       this.loading = true
