@@ -15,7 +15,7 @@
         <v-btn icon @click="toggleRandomValues"><v-icon>mdi-dice-multiple-outline</v-icon></v-btn>
       </v-btn-toggle>
     </v-card-title>
-    <v-data-table @pagination="linkify" ref="dataTable" :headers="table_headers" :items="requests" :search="search" :loading="loading"></v-data-table>
+    <v-data-table @pagination="linkify" ref="dataTable" :must-sort="true" :headers="table_headers" :items="requests" :search="search" :loading="loading"></v-data-table>
   </v-card>
 </template>
 
@@ -60,6 +60,7 @@ export default {
         {
           text: 'Description',
           filterable: true,
+          width: '50em',
           value: 'description'
         }
       ]
