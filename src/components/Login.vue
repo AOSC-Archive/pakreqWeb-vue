@@ -79,6 +79,12 @@ export default {
       loading: false
     }
   },
+  mounted () {
+    window.addEventListener('message', this.tgAuthCallback)
+  },
+  beforeDestroy () {
+    window.removeEventListener('message', this.tgAuthCallback)
+  },
   computed: {
     tg_iframe_url () {
       return `https://oauth.telegram.org/embed/${config.tg_bot_name}?origin=${window.encodeURIComponent(config.tg_bot_domain)}&size=large&request_access=write&radius=4`
@@ -115,6 +121,18 @@ export default {
     },
     clear_error () {
       this.login_error = null
+    },
+    tgAuthCallback (data) {
+      try {
+        var payload = JSON.parse(data)
+        if (payload.event === 'auth_user') {
+          // TODO
+        } else if (payload.event === 'unauthorized') {
+          this.login_error = 'Login failed: Telegram authentication cancelled'
+        }
+      } catch (e) {
+        this.login_error = 'Login failed: Unable to parse callback data'
+      }
     }
   }
 }
