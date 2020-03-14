@@ -17,17 +17,20 @@
     </v-card-text>
     <v-divider></v-divider>
     <v-card-text>
-      <pre>{{specContent}}</pre>
+      <code>spec</code>
+      <pre class="language-bash"><code id="spec" class="language-bash">{{specContent}}</code></pre>
     </v-card-text>
     <v-divider></v-divider>
     <v-card-text>
-      <pre>{{definesContent}}</pre>
+      <code>autobuild/defines</code>
+      <pre class="language-bash"><code id="defines" class="language-bash">{{definesContent}}</code></pre>
     </v-card-text>
   </v-card>
 </template>
 
 <script>
 import { normalizeName } from '@/utils'
+import Prism from 'prismjs'
 
 export default {
   name: 'AssistEditor',
@@ -80,7 +83,7 @@ export default {
   },
   computed: {
     specContent () {
-      return 'VER=' + (this.version || ' # TODO') + '\nSRCTBL=' + (this.download || ' # TODO')
+      return `VER=${this.version || ' # TODO'}\nSRCTBL=${this.download || ' # TODO'}`
     },
     definesContent () {
       return `PKGNAME=${this.package_name || ' # TODO'}\nPKGSEC=${this.section || ' # TODO'}\nPKGDEP="" # TODO\nBUILDDEP="" # TODO\nPKGDES="${this.description}"\n`
@@ -90,7 +93,25 @@ export default {
     search () {
       if (this.loading || this.requests.length > 0) return
       this.fetchData()
+    },
+    specContent () {
+      var spec = document.getElementById('spec')
+      spec.innerHTML = Prism.highlight(this.specContent, Prism.languages.bash, 'bash')
+    },
+    definesContent () {
+      var defines = document.getElementById('defines')
+      defines.innerHTML = Prism.highlight(this.definesContent, Prism.languages.bash, 'bash')
     }
   }
 }
 </script>
+
+<style scoped>
+.v-application code::before {
+  content: "";
+}
+.v-application code {
+  box-shadow: none;
+  -webkit-box-shadow: none;
+}
+</style>
