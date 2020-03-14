@@ -36,7 +36,7 @@
               <v-row no-gutters>
                 <iframe
                   id="telegram-login-samplebot"
-                  src="https://oauth.telegram.org/embed/pakreq_api_bot?origin=http%3A%2F%2Flocalhost&amp;size=large&amp;request_access=write&amp;radius=4"
+                  :src="tg_iframe_url"
                   scrolling="no"
                   style="border: medium none; overflow: hidden; height: 40px; width: 254px;"
                   width="238"
@@ -56,6 +56,7 @@
 </template>
 
 <script>
+import config from '@/../config.json'
 export default {
   name: 'Login',
   props: {
@@ -76,6 +77,11 @@ export default {
       password: '',
       login_error: null,
       loading: false
+    }
+  },
+  computed: {
+    tg_iframe_url () {
+      return `https://oauth.telegram.org/embed/${config.tg_bot_name}?origin=${window.encodeURIComponent(config.tg_bot_domain)}&size=large&request_access=write&radius=4`
     }
   },
   methods: {
