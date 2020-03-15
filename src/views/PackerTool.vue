@@ -114,7 +114,8 @@ export default {
         me.repology_perf = 'Finished. ' + (window.performance.now() - start) + ' ms (network)'
         me.repology_results = []
         for (var key in response.data) {
-          me.repology_results.push(repologyFilter(key, response.data[key], me.package_name))
+          var result = repologyFilter(key, response.data[key], me.package_name)
+          if (result) me.repology_results.push(result)
         }
         me.repology_results.sort(function (a, b) {
           return b.similarity - a.similarity
