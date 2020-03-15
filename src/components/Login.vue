@@ -122,16 +122,37 @@ export default {
     clear_error () {
       this.login_error = null
     },
-    tgAuthCallback (data) {
+    tgAuthCallback (evt) {
+      if (!evt.data || typeof evt.data !== 'string') return
       try {
-        var payload = JSON.parse(data)
+        var payload = JSON.parse(evt.data)
         if (payload.event === 'auth_user') {
-          // TODO
+          var me = this
+          this.$http.post('/api/oauth/telegram', {
+            data: payload.auth_data
+          }).then(function (response) {
+            me.$emit('login', response.data)
+            me.$emit('update:dialog', false)
+            me.$refs.login_form.reset()
+          }).catch(function (err) {
+            var reason = null
+            var status = (err.response && err.response.status) || null
+            if (status > 499 && status < 600) {
+              reason = 'Server error'
+            } else if (status > 399 && status < 500) {
+              reason = 'Invalid or expired login token'
+            } else if (!status) {
+              reason = err.message
+            }
+            me.login_error = 'Telegram login failed: ' + reason
+          }).finally(function () {
+            me.loading = false
+          })
         } else if (payload.event === 'unauthorized') {
-          this.login_error = 'Login failed: Telegram authentication cancelled'
+          this.login_error = 'Telegram login failed: Telegram authentication cancelled'
         }
       } catch (e) {
-        this.login_error = 'Login failed: Unable to parse callback data'
+        this.login_error = 'Telegram login failed: Unable to parse callback data'
       }
     }
   }
