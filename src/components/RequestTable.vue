@@ -13,6 +13,7 @@
       ></v-text-field>
       <v-btn-toggle dense color="deep-purple accent-3" v-model="useRandomList">
         <v-btn icon @click="toggleRandomValues"><v-icon>mdi-dice-multiple-outline</v-icon></v-btn>
+        <v-btn icon @click="toggleAutoUpdate"><v-icon>mdi-sync</v-icon></v-btn>
       </v-btn-toggle>
     </v-card-title>
     <v-data-table @pagination="linkify" ref="dataTable" :must-sort="true" :headers="table_headers" :items="requests" :search="search" :loading="loading"></v-data-table>
@@ -21,7 +22,6 @@
 
 <script>
 import linkifyElement from 'linkifyjs/element'
-import { getSettings } from '@/utils'
 
 export default {
   name: 'RequestTable',
@@ -71,10 +71,6 @@ export default {
   },
   mounted () {
     this.fetchData()
-    var settings = getSettings()
-    if (settings && settings.autoRefresh) {
-      this.refreshTimer = setInterval(this.fetchData, 5000)
-    }
   },
   beforeDestroy () {
     if (this.refreshTimer) clearInterval(this.refreshTimer)
@@ -132,6 +128,11 @@ export default {
         randomList.push(p[0])
       }
       this.requests = randomList
+    },
+    toggleAutoUpdate () {
+      if (!this.useRandomList) {
+        this.refreshTimer = setInterval(this.fetchData, 5000)
+      } else if (this.refreshTimer) clearInterval(this.refreshTimer)
     }
   }
 }
