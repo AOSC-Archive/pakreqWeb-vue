@@ -11,12 +11,29 @@
         single-line
         hide-details
       ></v-text-field>
-      <v-btn-toggle dense color="deep-purple accent-3" v-model="useRandomList">
-        <v-btn icon @click="toggleRandomValues"><v-icon>mdi-dice-multiple-outline</v-icon></v-btn>
-        <v-btn icon @click="toggleAutoUpdate"><v-icon>mdi-sync</v-icon></v-btn>
+      <v-btn-toggle
+        @change="toggleToolbar"
+        dense
+        color="deep-purple accent-3"
+        v-model="useRandomList"
+      >
+        <v-btn icon>
+          <v-icon>mdi-dice-multiple-outline</v-icon>
+        </v-btn>
+        <v-btn icon>
+          <v-icon>mdi-sync</v-icon>
+        </v-btn>
       </v-btn-toggle>
     </v-card-title>
-    <v-data-table @pagination="linkify" ref="dataTable" :must-sort="true" :headers="table_headers" :items="requests" :search="search" :loading="loading"></v-data-table>
+    <v-data-table
+      @pagination="linkify"
+      ref="dataTable"
+      :must-sort="true"
+      :headers="table_headers"
+      :items="requests"
+      :search="search"
+      :loading="loading"
+    ></v-data-table>
   </v-card>
 </template>
 
@@ -66,9 +83,7 @@ export default {
       ]
     }
   },
-  props: {
-    autoRefresh: Boolean
-  },
+  props: {},
   mounted () {
     this.fetchData()
   },
@@ -78,13 +93,11 @@ export default {
   methods: {
     linkify () {
       if (this.convertLinks) {
-        this.$nextTick(
-          function () {
-            document.getElementsByTagName('td').forEach(function (item) {
-              linkifyElement(item, null, document)
-            })
-          }
-        )
+        this.$nextTick(function () {
+          document.getElementsByTagName('td').forEach(function (item) {
+            linkifyElement(item, null, document)
+          })
+        })
       }
     },
     fetchData () {
@@ -119,8 +132,26 @@ export default {
       }
       return array
     },
-    toggleRandomValues () {
-      if (this.useRandomList === 0) { this.fetchData(); return }
+    toggleToolbar (item) {
+      switch (item) {
+        case 0:
+          this.toggleRandomValues(true)
+          this.toggleAutoUpdate(false)
+          break
+        case 1:
+          this.toggleRandomValues(false)
+          this.toggleAutoUpdate(true)
+          break
+        default:
+          this.toggleRandomValues(false)
+          this.toggleAutoUpdate(false)
+      }
+    },
+    toggleRandomValues (state) {
+      if (!state) {
+        this.fetchData()
+        return
+      }
       var random = this.getRandom()
       var randomList = []
       for (let i = 0; i < random.length; i++) {
@@ -129,10 +160,13 @@ export default {
       }
       this.requests = randomList
     },
-    toggleAutoUpdate () {
-      if (!this.useRandomList) {
+    toggleAutoUpdate (state) {
+      if (state) {
         this.refreshTimer = setInterval(this.fetchData, 5000)
-      } else if (this.refreshTimer) clearInterval(this.refreshTimer)
+      } else if (this.refreshTimer) {
+        clearInterval(this.refreshTimer)
+        this.refreshTimer = null
+      }
     }
   }
 }
