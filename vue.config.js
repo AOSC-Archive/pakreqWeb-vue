@@ -3,6 +3,8 @@ module.exports = {
     proxy: 'http://127.0.0.1:8100'
   },
 
+  publicPath: './',
+
   transpileDependencies: [
     'vuetify'
   ],

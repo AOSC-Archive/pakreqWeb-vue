@@ -14,6 +14,7 @@
         <NavItem icon="mdi-account-box" @click="checkAccount" title="Account" />
         <NavItem icon="mdi-settings-box" @click="callSettings" title="Settings" />
         <NavItem icon="mdi-assistant" @click="$router.push('/packertool')" title="Packaging Assist" />
+        <NavItem icon="mdi-clipboard-list" @click="$router.push('/itereditor')" title="Iter Plan Editor" />
         <NavItem icon="mdi-information" @click="$router.push('/about')" title="About" />
       </v-list>
     </v-navigation-drawer>
