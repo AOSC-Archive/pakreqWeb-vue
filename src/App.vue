@@ -31,6 +31,7 @@
 import NavItem from '@/components/NavItem.vue'
 import Login from '@/components/Login.vue'
 import Settings from '@/components/Settings.vue'
+import { getSettings } from '@/utils'
 export default {
   name: 'App',
 
@@ -49,6 +50,14 @@ export default {
     snackbar_type: 'error'
   }),
 
+  mounted () {
+    var settings = getSettings()
+    if (!!settings && settings.saveToken) {
+      var token = window.localStorage.getItem('token')
+      this.processLogin({ token: token })
+    }
+  },
+
   methods: {
     checkAccount () {
       this.drawer = false
@@ -58,10 +67,14 @@ export default {
       this.drawer = false
       this.settings_dialog = true
     },
-    showLoginError () {
-      this.snackbar_message = 'An unexpected error occurred, please try to log in again'
+    showLoginError (msg) {
+      var message = msg || 'An unexpected error occurred, please try to log in again'
+      this.snackbar_message = message
       this.snackbar_type = 'error'
       this.snackbar = true
+    },
+    showLoginExpired () {
+      this.showLoginError('Your session has expired, please try to log in again')
     },
     showLoginFinished (username) {
       this.snackbar_message = 'Welcome back, ' + username
@@ -74,7 +87,16 @@ export default {
         var payload = event.token.split('.')[1]
         var callback = JSON.parse(atob(payload))
         var user = callback.sub
+        var expiration = Date.parse(callback.exp)
         !!user || this.showLoginError()
+        if (expiration <= Date.now()) {
+          this.showLoginExpired()
+          return
+        }
+        var settings = getSettings()
+        if (!!settings && settings.saveToken) {
+          window.localStorage.setItem('token', event.token)
+        }
         this.showLoginFinished(user)
       } catch (e) {
         this.showLoginError()

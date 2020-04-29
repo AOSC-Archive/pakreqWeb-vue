@@ -1,5 +1,6 @@
 <template>
   <v-row>
+    <v-snackbar v-model="snackbar" @input="snackbar_message = null" :top="true" color="error">{{snackbar_message}}</v-snackbar>
     <v-dialog v-model="dialog" max-width="600px" @click:outside="$emit('update:dialog', false)">
       <v-card>
         <v-card-title>Login</v-card-title>
@@ -27,25 +28,24 @@
                   label="Password"
                   outlined
                 ></v-text-field>
-                <v-btn :loading="loading" @click="validateAndSubmit">Login</v-btn>
+                <v-checkbox v-model="remember" label="Remember Me"></v-checkbox>
+                <v-btn :loading="loading" @click="validateAndSubmit"><v-icon left>mdi-login-variant</v-icon> Login</v-btn>
               </v-form>
             </v-container>
             <v-divider></v-divider>
             <h3>Other Login Options</h3>
             <v-container>
               <v-row no-gutters>
-                <iframe
-                  id="telegram-login-samplebot"
-                  :src="tg_iframe_url"
-                  scrolling="no"
-                  style="border: medium none; overflow: hidden; height: 40px; width: 254px;"
-                  width="238"
-                  height="40"
-                  frameborder="0"
-                ></iframe>
-              </v-row>
-              <v-row no-gutters>
-                <v-btn :loading="loading">AOSC Login</v-btn>
+                <v-row>
+                  <v-col>
+                    <div class="my-2">
+                      <TelegramLoginButton @login="handleExternalLogin" />
+                    </div>
+                    <div class="my-2">
+                      <AOSCLoginButton @login="handleExternalLogin" />
+                    </div>
+                  </v-col>
+                </v-row>
               </v-row>
             </v-container>
           </v-container>
@@ -56,12 +56,16 @@
 </template>
 
 <script>
-import config from '@/../config.json'
+import 'font-logos/assets/font-logos.css'
+import AOSCLoginButton from '@/components/AOSCLoginButton.vue'
+import TelegramLoginButton from '@/components/TelegramLoginButton.vue'
+import { getSettings, saveSettings } from '@/utils'
 export default {
   name: 'Login',
   props: {
     dialog: Boolean
   },
+  components: { AOSCLoginButton, TelegramLoginButton },
   data () {
     return {
       isValid: false,
@@ -75,23 +79,30 @@ export default {
       ],
       username: '',
       password: '',
+      remember: false,
       login_error: null,
-      loading: false
+      snackbar_message: null,
+      snackbar: false,
+      loading: false,
+      oauth_loading: false,
+      oauth_state: null,
+      timer: null
+    }
+  },
+  watch: {
+    snackbar_message () {
+      if (this.snackbar_message) this.snackbar = true
     }
   },
   mounted () {
-    window.addEventListener('message', this.tgAuthCallback)
-  },
-  beforeDestroy () {
-    window.removeEventListener('message', this.tgAuthCallback)
-  },
-  computed: {
-    tg_iframe_url () {
-      return `https://oauth.telegram.org/embed/${config.tg_bot_name}?origin=${window.encodeURIComponent(config.tg_bot_domain)}&size=large&request_access=write&radius=4`
-    }
+    var settings = getSettings()
+    this.remember = settings.saveToken
   },
   methods: {
     validateAndSubmit () {
+      // hide the currently showing message
+      this.snackbar = false
+      this.snackbar_message = null
       if (!this.$refs.login_form.validate()) return
       var me = this
       this.loading = true
@@ -101,6 +112,11 @@ export default {
           'x-password': this.password
         }
       }).then(function (response) {
+        var settings = getSettings()
+        if (settings != null) {
+          settings.saveToken = me.remember
+          saveSettings(settings)
+        }
         me.$emit('login', response.data)
         me.$emit('update:dialog', false)
         me.$refs.login_form.reset()
@@ -114,7 +130,7 @@ export default {
         } else if (!status) {
           reason = err.message
         }
-        me.login_error = 'Login failed: ' + reason
+        me.snackbar_message = 'Login failed: ' + reason
       }).finally(function () {
         me.loading = false
       })
@@ -122,37 +138,11 @@ export default {
     clear_error () {
       this.login_error = null
     },
-    tgAuthCallback (evt) {
-      if (!evt.data || typeof evt.data !== 'string') return
-      try {
-        var payload = JSON.parse(evt.data)
-        if (payload.event === 'auth_user') {
-          var me = this
-          this.$http.post('/api/oauth/telegram', {
-            data: payload.auth_data
-          }).then(function (response) {
-            me.$emit('login', response.data)
-            me.$emit('update:dialog', false)
-            me.$refs.login_form.reset()
-          }).catch(function (err) {
-            var reason = null
-            var status = (err.response && err.response.status) || null
-            if (status > 499 && status < 600) {
-              reason = 'Server error'
-            } else if (status > 399 && status < 500) {
-              reason = 'Invalid or expired login token'
-            } else if (!status) {
-              reason = err.message
-            }
-            me.login_error = 'Telegram login failed: ' + reason
-          }).finally(function () {
-            me.loading = false
-          })
-        } else if (payload.event === 'unauthorized') {
-          this.login_error = 'Telegram login failed: Telegram authentication cancelled'
-        }
-      } catch (e) {
-        this.login_error = 'Telegram login failed: Unable to parse callback data'
+    handleExternalLogin (evt) {
+      if (evt.error_text) {
+        this.snackbar = false
+        this.snackbar_message = null
+        this.snackbar_message = evt.error_text
       }
     }
   }

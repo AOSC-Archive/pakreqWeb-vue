@@ -96,10 +96,47 @@ export function normalizeName (name) {
   return matched ? matched[0] : null
 }
 
+export function externalAuth (url, name, me) {
+  var left = Math.max(0, (screen.width - 550) / 2) + (screen.availLeft | 0)
+  var top = Math.max(0, (screen.height - 450) / 2) + (screen.availTop | 0)
+  var auth = window.open(url, '_blank', `left=${left},top=${top},width=550,height=450,toolbar=0`)
+  me.state = 0
+  var timer = setInterval(function () {
+    if (auth.closed) { // authentication window closed
+      // idea here is to wait for another cycle to see if callback has engaged
+      if (me.state === -1) {
+        // if callback is not called within 500ms, then the authentication window is
+        // probably closed by the user
+        clearInterval(timer)
+        me.timer = null
+        me.loading = false
+        me.raiseError(`${name} login failed: ${name} authentication cancelled`)
+      } else if (me.state > 0) { // if callback called, the oauth_state will be set to 1
+        clearInterval(timer)
+        me.timer = null
+      } else {
+        me.state = -1 // set the flag to -1
+      }
+    }
+  }, 500)
+  me.timer = timer
+  me.loading = true
+}
+
 export function getSettings () {
   if (!('localStorage' in window)) return null
   try {
     var settings = JSON.parse(window.localStorage.getItem('settings'))
+    return settings || {}
+  } catch (e) {
+    return null
+  }
+}
+
+export function saveSettings (settings) {
+  if (!('localStorage' in window)) return null
+  try {
+    window.localStorage.setItem('settings', JSON.stringify(settings))
     return settings
   } catch (e) {
     return null

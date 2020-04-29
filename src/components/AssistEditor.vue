@@ -83,7 +83,8 @@ export default {
   },
   computed: {
     specContent () {
-      return `VER=${this.version || ' # TODO'}\nSRCTBL=${this.download || ' # TODO'}`
+      var download = `"${this.download}"`
+      return `VER=${this.version || ' # TODO'}\nSRCTBL=${this.download ? download : '"" # TODO'}`
     },
     definesContent () {
       return `PKGNAME=${this.package_name || ' # TODO'}\nPKGSEC=${this.section || ' # TODO'}\nPKGDEP="" # TODO\nBUILDDEP="" # TODO\nPKGDES="${this.description}"\n`
