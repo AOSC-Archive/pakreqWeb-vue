@@ -12,7 +12,6 @@
       <v-list nav>
         <NavItem icon="mdi-home" @click="$router.push('/')" title="Home" />
         <NavItem icon="mdi-account-box" @click="checkAccount" title="Account" />
-        <NavItem icon="mdi-settings-box" @click="callSettings" title="Settings" />
         <NavItem icon="mdi-assistant" @click="$router.push('/packertool')" title="Packaging Assist" />
         <NavItem icon="mdi-clipboard-list" @click="$router.push('/itereditor')" title="Iter Plan Editor" />
         <NavItem icon="mdi-information" @click="$router.push('/about')" title="About" />
@@ -61,7 +60,7 @@ export default {
   methods: {
     checkAccount () {
       this.drawer = false
-      if (!this.token) this.login_dialog = true
+      if (!this.token) { this.login_dialog = true } else { this.callSettings() }
     },
     callSettings () {
       this.drawer = false
@@ -91,6 +90,7 @@ export default {
         !!user || this.showLoginError()
         if (expiration <= Date.now()) {
           this.showLoginExpired()
+          window.localStorage.removeItem('token')
           return
         }
         var settings = getSettings()

@@ -105,7 +105,7 @@ export function externalAuth (url, name, me) {
     if (auth.closed) { // authentication window closed
       // idea here is to wait for another cycle to see if callback has engaged
       if (me.state === -1) {
-        // if callback is not called within 500ms, then the authentication window is
+        // if callback is not called within 1500ms, then the authentication window is
         // probably closed by the user
         clearInterval(timer)
         me.timer = null
@@ -118,7 +118,7 @@ export function externalAuth (url, name, me) {
         me.state = -1 // set the flag to -1
       }
     }
-  }, 500)
+  }, 1500)
   me.timer = timer
   me.loading = true
 }
