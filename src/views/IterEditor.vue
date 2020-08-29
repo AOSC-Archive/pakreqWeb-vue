@@ -75,13 +75,17 @@
                   </v-col>
                   <v-col>
                     <v-autocomplete
-                      v-model="pending.from"
+                      v-model="pending.origin"
                       :items="branches"
                       label="Originating branch"
                     ></v-autocomplete>
                   </v-col>
                   <v-col>
-                    <v-autocomplete v-model="pending.to" :items="branches" label="Target branch"></v-autocomplete>
+                    <v-autocomplete
+                      v-model="pending.target"
+                      :items="branches"
+                      label="Target branch"
+                    ></v-autocomplete>
                   </v-col>
                 </v-row>
                 <v-row>
@@ -139,9 +143,15 @@
               </v-col>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn text ><v-icon left>mdi-playlist-plus</v-icon></v-btn>
-                <v-btn text @click="editItem(currentItem)"><v-icon left>mdi-pencil</v-icon></v-btn>
-                <v-btn text @click="removeItem(currentItem)"><v-icon left>mdi-delete</v-icon></v-btn>
+                <v-btn v-if="!currentItem.parent_id" text @click="addSubItem()">
+                  <v-icon left>mdi-playlist-plus</v-icon>
+                </v-btn>
+                <v-btn text @click="editItem(currentItem)">
+                  <v-icon left>mdi-pencil</v-icon>
+                </v-btn>
+                <v-btn text @click="removeItem(currentItem)">
+                  <v-icon left>mdi-delete</v-icon>
+                </v-btn>
               </v-card-actions>
             </v-card>
           </v-scroll-y-transition>
@@ -157,10 +167,12 @@ import MarkdownIt from 'markdown-it'
 // == cut
 import * as SockJS from 'sockjs-client'
 function encodeAndSend (sock, index, action, data) {
+  var dataCopy = data
+  delete dataCopy.children
   var payload = {
     index: index,
     action: action,
-    data: data
+    data: dataCopy
   }
   sock.send(JSON.stringify(payload))
 }
@@ -170,6 +182,29 @@ function receiveAndDecode (payload) {
     return JSON.parse(payload)
   } catch (e) {
     return null
+  }
+}
+
+function getItemById (todos, id) {
+  if (id < 0) return null
+  for (let i = 0; i < todos.length; i++) {
+    if (todos[i].id === id) return todos[i]
+    if (!todos[i].children) continue
+    for (let j = 0; j < todos[i].children.length; j++) {
+      if (todos[i].children[j].id === id) return todos[i].children[j]
+    }
+  }
+  return null
+}
+
+function onMatchedIndex (todos, id, callback) {
+  if (id < 0) return null
+  for (let i = 0; i < todos.length; i++) {
+    if (todos[i].id === id) return callback(todos, i)
+    if (!todos[i].children) continue
+    for (let j = 0; j < todos[i].children.length; j++) {
+      if (todos[i].children[j].id === id) return callback(todos[i].children, j)
+    }
   }
 }
 // == cut
@@ -210,12 +245,12 @@ export default {
         {
           text: 'Origin branch',
           filterable: true,
-          value: 'from'
+          value: 'origin'
         },
         {
           text: 'Target branch',
           filterable: true,
-          value: 'to'
+          value: 'target'
         },
         {
           text: 'Announcement Page',
@@ -238,13 +273,20 @@ export default {
           description: 'Description',
           url: 'http://example.com',
           version: '1.0',
-          from: 'stable-proposed',
-          to: 'stable',
+          origin: 'stable-proposed',
+          target: 'stable',
           date: '2020-01-01'
         }
       ],
       selected: [],
-      categories: ['released', 'expected', 'priority'],
+      categories: [
+        'released',
+        'expected',
+        'priority',
+        'security',
+        'add',
+        'drop'
+      ],
       branches: [
         'stable',
         'testing',
@@ -258,29 +300,33 @@ export default {
   },
   computed: {
     currentItem () {
-      if (this.selected[0] < 0) return null
-      return this.todos.find(item => item.id === this.selected[0])
+      return getItemById(this.todos, this.selected[0])
     },
     finished: {
       get () {
         var result = []
-        this.todos.forEach(item => {
+        this.todos.forEach((item) => {
           item.done && result.push(item.id)
+          if (item.children) {
+            item.children.forEach((child) => {
+              child.done && result.push(child.id)
+            })
+          }
         })
         return result
       },
       set (value) {
-        var add = value.filter(v => !this.alreadyFinished.includes(v))
-        var remove = this.alreadyFinished.filter(v => !value.includes(v))
+        var add = value.filter((v) => !this.alreadyFinished.includes(v))
+        var remove = this.alreadyFinished.filter((v) => !value.includes(v))
         this.alreadyFinished = value
-        add.forEach(v => {
-          var item = this.todos.find(item => item.id === v)
+        add.forEach((v) => {
+          var item = getItemById(this.todos, v)
           if (!item) return
           item.done = true
           encodeAndSend(this.sock, v, 'mod', item)
         })
-        remove.forEach(v => {
-          var item = this.todos.find(item => item.id === v)
+        remove.forEach((v) => {
+          var item = getItemById(this.todos, v)
           if (!item) return
           item.done = false
           encodeAndSend(this.sock, v, 'mod', item)
@@ -311,30 +357,41 @@ export default {
         done: false,
         name: '',
         version: '',
-        from: '',
-        to: '',
+        origin: '',
+        target: '',
         description: '',
         date: '',
+        url: '',
         category: ''
       }
     },
     onMessage (msg) {
       var decoded = receiveAndDecode(msg.data)
-      var index = null
       if (!decoded) return
       switch (decoded.action) {
         case 'o':
           this.todos = decoded.data
           break
         case 'rm':
-          index = this.todos.findIndex(item => item.id === decoded.index)
-          this.todos.splice(index, 1)
+          onMatchedIndex(this.todos, decoded.index, (todos, index) => {
+            todos.splice(index, 1)
+          })
           break
         case 'mod':
-          index = this.todos.findIndex(item => item.id === decoded.index)
-          this.$set(this.todos, index, decoded.data)
+          onMatchedIndex(this.todos, decoded.data.id, (todos, index) => {
+            this.$set(todos, index, decoded.data)
+          })
           break
         case 'add':
+          // subitems
+          if (decoded.data.parent_id >= 0) {
+            var parent = this.todos.find(
+              (item) => item.id === decoded.data.parent_id
+            )
+            if (!parent.children) parent.children = []
+            parent.children.push(decoded.data)
+            return
+          }
           this.todos.push(decoded.data)
           break
       }
@@ -359,6 +416,11 @@ export default {
     },
     addItem () {
       this.editedIndex = -1
+      this.editor = true
+    },
+    addSubItem () {
+      this.editedIndex = -1
+      this.pending.parent_id = this.selected[0]
       this.editor = true
     },
     editItem (item) {

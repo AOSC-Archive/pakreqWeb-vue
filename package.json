@@ -22,15 +22,15 @@
     "sockjs-client": "^1.5.0",
     "vue": "^2.6.11",
     "vue-axios": "^2.1.5",
-    "vue-router": "^3.4.2",
-    "vuetify": "^2.3.8"
+    "vue-router": "^3.4.3",
+    "vuetify": "^2.3.9"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.2",
-    "@vue/cli-plugin-eslint": "~4.5.2",
-    "@vue/cli-plugin-pwa": "~4.5.2",
-    "@vue/cli-plugin-router": "~4.5.2",
-    "@vue/cli-service": "~4.5.2",
+    "@vue/cli-plugin-babel": "~4.5.4",
+    "@vue/cli-plugin-eslint": "~4.5.4",
+    "@vue/cli-plugin-pwa": "~4.5.4",
+    "@vue/cli-plugin-router": "~4.5.4",
+    "@vue/cli-service": "~4.5.4",
     "@vue/eslint-config-standard": "^5.1.2",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.8.0",
