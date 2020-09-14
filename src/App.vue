@@ -18,11 +18,11 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-content>
+    <v-main>
       <Login @login="processLogin" :dialog.sync="login_dialog" />
       <Settings :dialog.sync="settings_dialog" @settings="processSettings" />
       <router-view />
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 
