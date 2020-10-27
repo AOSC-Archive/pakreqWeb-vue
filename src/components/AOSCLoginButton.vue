@@ -24,7 +24,7 @@ export default {
   },
   computed: {
     aosc_auth_url () {
-      return `https://whoami.aosc.io/idp/openidc/Authorization?response_type=code&scope=openid%20profile&client_id=&redirect_uri=${window.encodeURIComponent(window.location.protocol + '//' + window.location.host + '/oauth/aosc')}`
+      return `https://whoami.aosc.io/dex/auth?response_type=code&scope=openid%20profile&client_id=&redirect_uri=${window.encodeURIComponent(window.location.protocol + '//' + window.location.host + '/oauth/aosc')}`
     }
   },
   methods: {

@@ -19,11 +19,6 @@ const routes = [
     path: '/packertool',
     name: 'PackerTool',
     component: () => import(/* webpackChunkName: "packertool" */ '../views/PackerTool.vue')
-  },
-  {
-    path: '/itereditor',
-    name: 'IterEditor',
-    component: () => import(/* webpackChunkName: "itereditor" */ '../views/IterEditor.vue')
   }
 ]
 
