@@ -1,7 +1,7 @@
 <template>
-  <v-row>
+  <div>
     <v-snackbar v-model="snackbar" @input="snackbar_message = null" :top="true" color="error">{{snackbar_message}}</v-snackbar>
-    <v-dialog v-model="dialog" max-width="600px" @click:outside="$emit('update:dialog', false)">
+    <v-dialog v-bind:value="dialog" max-width="600px" @click:outside="$emit('update:dialog', false)">
       <v-card>
         <v-card-title>Login</v-card-title>
         <v-card-text>
@@ -52,7 +52,7 @@
         </v-card-text>
       </v-card>
     </v-dialog>
-  </v-row>
+  </div>
 </template>
 
 <script>

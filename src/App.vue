@@ -18,10 +18,10 @@
       </v-list>
     </v-navigation-drawer>
 
+    <Login @login="processLogin" :dialog.sync="login_dialog" />
+    <Settings :dialog.sync="settings_dialog" @settings="processSettings" />
     <v-main>
-      <Login @login="processLogin" :dialog.sync="login_dialog" />
-      <Settings :dialog.sync="settings_dialog" @settings="processSettings" />
-      <router-view />
+        <router-view />
     </v-main>
   </v-app>
 </template>
@@ -53,7 +53,9 @@ export default {
     var settings = getSettings()
     if (!!settings && settings.saveToken) {
       var token = window.localStorage.getItem('token')
-      this.processLogin({ token: token })
+      if (token) {
+        this.processLogin({ token: token })
+      }
     }
   },
 
