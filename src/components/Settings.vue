@@ -58,7 +58,7 @@ export default {
     }
   },
   mounted () {
-    var settings = getSettings()
+    const settings = getSettings()
     if (typeof settings === 'object' && !!settings) {
       this.saveToken = settings.saveToken
     }

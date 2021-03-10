@@ -50,9 +50,9 @@ export default {
   }),
 
   mounted () {
-    var settings = getSettings()
+    const settings = getSettings()
     if (!!settings && settings.saveToken) {
-      var token = window.localStorage.getItem('token')
+      const token = window.localStorage.getItem('token')
       if (token) {
         this.processLogin({ token: token })
       }
@@ -69,7 +69,7 @@ export default {
       this.settings_dialog = true
     },
     showLoginError (msg) {
-      var message = msg || 'An unexpected error occurred, please try to log in again'
+      const message = msg || 'An unexpected error occurred, please try to log in again'
       this.snackbar_message = message
       this.snackbar_type = 'error'
       this.snackbar = true
@@ -85,17 +85,17 @@ export default {
     processLogin (event) {
       (event && !!event.token) || this.showLoginError()
       try {
-        var payload = event.token.split('.')[1]
-        var callback = JSON.parse(atob(payload))
-        var user = callback.sub
-        var expiration = Date.parse(callback.exp)
+        const payload = event.token.split('.')[1]
+        const callback = JSON.parse(atob(payload))
+        const user = callback.sub
+        const expiration = Date.parse(callback.exp)
         !!user || this.showLoginError()
         if (expiration <= Date.now()) {
           this.showLoginExpired()
           window.localStorage.removeItem('token')
           return
         }
-        var settings = getSettings()
+        const settings = getSettings()
         if (!!settings && settings.saveToken) {
           window.localStorage.setItem('token', event.token)
         }
