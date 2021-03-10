@@ -51,7 +51,7 @@ export default {
   },
   methods: {
     fetchData () {
-      var me = this
+      const me = this
       this.loading = true
       this.$http
         .get('https://pakreq.aosc.io/api/requests')
@@ -83,7 +83,7 @@ export default {
   },
   computed: {
     specContent () {
-      var download = `"${this.download}"`
+      const download = `"${this.download}"`
       return `VER=${this.version || ' # TODO'}\nSRCTBL=${this.download ? download : '"" # TODO'}`
     },
     definesContent () {
@@ -96,11 +96,11 @@ export default {
       this.fetchData()
     },
     specContent () {
-      var spec = document.getElementById('spec')
+      const spec = document.getElementById('spec')
       spec.innerHTML = Prism.highlight(this.specContent, Prism.languages.bash, 'bash')
     },
     definesContent () {
-      var defines = document.getElementById('defines')
+      const defines = document.getElementById('defines')
       defines.innerHTML = Prism.highlight(this.definesContent, Prism.languages.bash, 'bash')
     }
   }
