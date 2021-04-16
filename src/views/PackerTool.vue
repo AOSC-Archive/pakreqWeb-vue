@@ -62,7 +62,7 @@ export default {
   methods: {
     checkAOSC () {
       this.aosc_loading = true
-      var me = this
+      const me = this
       window.performance.mark('p0_s')
       // TODO: find a better way to handle CORS
       this.$http
@@ -70,13 +70,13 @@ export default {
           'https://api.allorigins.win/raw?url=https%3A%2F%2Fpackages.aosc.io%2Flist.json'
         )
         .then(function (response) {
-          var packages = response.data.packages
-          var scores = []
+          const packages = response.data.packages
+          const scores = []
           window.performance.mark('p1_s')
           for (let i = 0; i < packages.length; i++) {
-            var p = packages[i]
-            var jw = jaroWinkler(me.package_name, p.name)
-            var sd = sorensenDice(me.package_name, p.name)
+            const p = packages[i]
+            const jw = jaroWinkler(me.package_name, p.name)
+            const sd = sorensenDice(me.package_name, p.name)
             scores.push({
               name: p.name,
               score: Math.max(jw, 1.0) + sd
@@ -85,12 +85,12 @@ export default {
           scores.sort(function (a, b) {
             return b.score - a.score
           })
-          var topThree = scores.slice(0, 3)
+          const topThree = scores.slice(0, 3)
           window.performance.mark('p1_e')
           window.performance.measure('p0', 'p0_s', 'p1_s')
           window.performance.measure('p1', 'p1_s', 'p1_e')
           window.performance.clearMarks()
-          var measures = window.performance.getEntriesByType('measure')
+          const measures = window.performance.getEntriesByType('measure')
           window.performance.clearMeasures()
           me.aosc_results = topThree
           me.aosc_perf = 'Finished. ' + measures[0].duration + 'ms (network) + ' + measures[1].duration + 'ms (stats)'
@@ -105,16 +105,16 @@ export default {
     },
     checkRepology () {
       this.repology_loading = true
-      var start = window.performance.now()
-      var url = 'https://repology.org/api/v1/projects/?search=' + encodeURIComponent(this.package_name)
+      const start = window.performance.now()
+      const url = 'https://repology.org/api/v1/projects/?search=' + encodeURIComponent(this.package_name)
       // TODO: find a better way to handle CORS
-      var corsUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
-      var me = this
+      const corsUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
+      const me = this
       this.$http.get(corsUrl).then(function (response) {
         me.repology_perf = 'Finished. ' + (window.performance.now() - start) + ' ms (network)'
         me.repology_results = []
-        for (var key in response.data) {
-          var result = repologyFilter(key, response.data[key], me.package_name)
+        for (const key in response.data) {
+          const result = repologyFilter(key, response.data[key], me.package_name)
           if (result) me.repology_results.push(result)
         }
         me.repology_results.sort(function (a, b) {

@@ -1,16 +1,16 @@
 export function jaroWinkler (a, b) {
-  var m = 0 // Number of matches
-  var t = 0 // Number of transpositions
-  var p = 0.1 // Winkler score scaling factor
-  var l = 0 // Common prefix length
-  var miss = false
-  for (var i = 0; i < a.length; i++) {
+  let m = 0 // Number of matches
+  let t = 0 // Number of transpositions
+  const p = 0.1 // Winkler score scaling factor
+  let l = 0 // Common prefix length
+  let miss = false
+  for (let i = 0; i < a.length; i++) {
     m += b.includes(a[i])
     t += (a[i] !== b[i])
     if (a[i] === b[i] && miss) l++; else miss = true
   }
   t /= 2 // Number of transpositions / 2
-  var jaro = m === 0 ? 0 : (m / a.length + m / b.length + (m - t) / m) / 3 // Jaro distance
+  const jaro = m === 0 ? 0 : (m / a.length + m / b.length + (m - t) / m) / 3 // Jaro distance
   return jaro + (p * l) * (1 - jaro) // Jaro-Winkler distance
 }
 
@@ -53,13 +53,13 @@ export function sorensenDice (first, second) {
 }
 
 export function repologyFilter (name, input, similarName) {
-  var resultStable = null
-  var resultUnstable = null
-  var possibleSummaries = []
-  var possibleCategories = []
-  var possibleDownloads = []
-  for (var i = 0; i < input.length; i++) {
-    var repo = input[i]
+  let resultStable = null
+  const resultUnstable = null
+  const possibleSummaries = []
+  const possibleCategories = []
+  const possibleDownloads = []
+  for (let i = 0; i < input.length; i++) {
+    const repo = input[i]
     if (repo.summary && !possibleSummaries.includes(repo.summary)) possibleSummaries.push(repo.summary)
     if (repo.categories && !possibleCategories.includes(repo.categories)) possibleCategories.push(repo.categories)
     if (repo.downloads && !possibleDownloads.includes(repo.downloads)) possibleDownloads.push(repo.downloads)
@@ -79,7 +79,7 @@ export function repologyFilter (name, input, similarName) {
       }
     }
   }
-  var finalResult = resultStable || resultUnstable
+  const finalResult = resultStable || resultUnstable
   if (finalResult) {
     finalResult.summaries = possibleSummaries
     finalResult.categories = possibleCategories
@@ -90,18 +90,18 @@ export function repologyFilter (name, input, similarName) {
 }
 
 export function normalizeName (name) {
-  var replaced = name.trim().toLowerCase().replace(/[^0-9a-z+\-.]/g, '')
-  var pattern = /[0-9a-z][0-9a-z+\-.]+/
-  var matched = pattern.exec(replaced)
+  const replaced = name.trim().toLowerCase().replace(/[^0-9a-z+\-.]/g, '')
+  const pattern = /[0-9a-z][0-9a-z+\-.]+/
+  const matched = pattern.exec(replaced)
   return matched ? matched[0] : null
 }
 
 export function externalAuth (url, name, me) {
-  var left = Math.max(0, (screen.width - 550) / 2) + (screen.availLeft | 0)
-  var top = Math.max(0, (screen.height - 450) / 2) + (screen.availTop | 0)
-  var auth = window.open(url, '_blank', `left=${left},top=${top},width=550,height=450,toolbar=0`)
+  const left = Math.max(0, (screen.width - 550) / 2) + (screen.availLeft | 0)
+  const top = Math.max(0, (screen.height - 450) / 2) + (screen.availTop | 0)
+  const auth = window.open(url, '_blank', `left=${left},top=${top},width=550,height=450,toolbar=0`)
   me.state = 0
-  var timer = setInterval(function () {
+  const timer = setInterval(function () {
     if (auth.closed) { // authentication window closed
       // idea here is to wait for another cycle to see if callback has engaged
       if (me.state === -1) {
@@ -126,7 +126,7 @@ export function externalAuth (url, name, me) {
 export function getSettings () {
   if (!('localStorage' in window)) return null
   try {
-    var settings = JSON.parse(window.localStorage.getItem('settings'))
+    const settings = JSON.parse(window.localStorage.getItem('settings'))
     return settings || {}
   } catch (e) {
     return null
